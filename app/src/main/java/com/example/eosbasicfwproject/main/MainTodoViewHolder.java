@@ -1,5 +1,7 @@
 package com.example.eosbasicfwproject.main;
 
+import android.text.SpannableString;
+import android.text.style.StrikethroughSpan;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -32,5 +34,10 @@ public class MainTodoViewHolder extends RecyclerView.ViewHolder {
     public void onBind(TodoItem item) {
         checkBox.setChecked(item.getChecked());
         tvTitle.setText(item.getTitle());
+        if(item.getChecked() == true) {
+            SpannableString contentSp = new SpannableString(item.getTitle());
+            contentSp.setSpan(new StrikethroughSpan(), 0, item.getTitle().length(), 0);
+            tvTitle.setText(contentSp);
+        }
     }
 }

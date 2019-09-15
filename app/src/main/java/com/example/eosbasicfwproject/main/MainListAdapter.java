@@ -26,9 +26,7 @@ public class MainListAdapter extends RecyclerView.Adapter<MainTodoViewHolder> {
         notifyDataSetChanged();
     }
 
-    public void addItem(TodoItem item) {
-        itemList.add(item);
-    }
+    public void addItem(TodoItem item) { itemList.add(item); }
     public void removeItem(int position) { itemList.remove(position); }
 
     @NonNull
