@@ -1,34 +1,35 @@
 package com.example.eosbasicfwproject.main;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.eosbasicfwproject.R;
-import com.example.eosbasicfwproject.data.ItemTodo;
-import com.example.eosbasicfwproject.data.TempDummyData;
+import com.example.eosbasicfwproject.data.database.MyDatabase;
+import com.example.eosbasicfwproject.data.entitiy.TodoItem;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class MainListAdapter extends RecyclerView.Adapter<MainTodoViewHolder> {
 
-    private ArrayList<ItemTodo> itemList = new ArrayList<ItemTodo>();
-    private ItemClickListener itemClickListener;
+    private ArrayList<TodoItem> itemList = new ArrayList<TodoItem>();
 
-    public void setItemClickListener(ItemClickListener itemClickListener) {
-        this.itemClickListener = itemClickListener;
+    public void submitList(List<TodoItem> list){
+        itemList.clear();
+        itemList.addAll(list);
+        notifyDataSetChanged();
     }
 
-    interface ItemClickListener {
-        void onItemClick(View view,int position);
+    public void addItem(TodoItem item) {
+        itemList.add(item);
     }
-
-    MainListAdapter(){
-        itemList.addAll(TempDummyData.dummyList);
-    }
+    public void removeItem(int position) { itemList.remove(position); }
 
     @NonNull
     @Override
@@ -37,9 +38,44 @@ public class MainListAdapter extends RecyclerView.Adapter<MainTodoViewHolder> {
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(itemClickListener != null) {
-                    itemClickListener.onItemClick(v, viewHolder.getAdapterPosition());
-                }
+                TodoItem temp = itemList.get(viewHolder.getAdapterPosition());
+                temp.setChecked(!temp.getChecked());
+                MyDatabase db = MyDatabase.getInstance(v.getContext());
+                db.todoDao().updateTodo(temp);
+                notifyDataSetChanged();
+            }
+        });
+        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(final View v) {
+                final TodoItem temp = itemList.get(viewHolder.getAdapterPosition());
+                final String[] list = {"수정", "삭제", "취소"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                new AlertDialog.Builder(v.getContext())
+                        .setTitle(temp.getTitle())
+                        .setItems(list, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int position) {
+                                switch (list[position]) {
+                                    case "수정":
+                                        //
+                                        break;
+
+                                    case "삭제":
+                                        MyDatabase db = MyDatabase.getInstance(v.getContext());
+                                        db.todoDao().deleteTodo(temp);
+                                        removeItem(viewHolder.getAdapterPosition());
+                                        notifyDataSetChanged();
+                                        break;
+
+                                    case "취소":
+                                        break;
+                                }
+                            }
+                        })
+                        .show();
+                return true;
             }
         });
 
